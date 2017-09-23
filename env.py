@@ -4,7 +4,7 @@ import numpy as np
 
 from QtableAgent import QtableAgent
 
-BIN_SIZE = 20
+BIN_SIZE = 8
 
 
 env = gym.make('CartPole-v0')

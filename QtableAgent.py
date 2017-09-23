@@ -3,7 +3,7 @@ import numpy as np
 import random
 import math
 
-explore_rate = 0.5
+explore_rate = 0.8
 discount_rate = 0.9
 learning_rate = 0.1
 DECAY_RATE = math.log(3) * 0.01
@@ -34,6 +34,10 @@ class QtableAgent(Agent):
             self.action = np.argmax(self.q_table[self.state])
 
         next_state, self.reward, done, _ = self.env.step(self.action)
+
+        if done:
+            self.reward = -1.0
+
         self.table_next_state = self._state_to_table(next_state)
 
         self.train()
@@ -42,7 +46,7 @@ class QtableAgent(Agent):
         return next_state, self.reward, done
 
     def train(self):
-        self.q_table[self.state] = learning_rate * (discount_rate*self.reward*self.table_next_state - self.state)
+        self.q_table[self.state][self.action] = learning_rate * (self.reward + discount_rate * np.amax(self.q_table[self.table_next_state]) - self.state)
 
 
 # state managements #
@@ -78,7 +82,6 @@ class QtableAgent(Agent):
 
     def _state_to_table(self, state):
         state_indexes = self._state_to_bin(state)
-        print(state_indexes)
         state = 0
         for index, state_bin in enumerate(state_indexes):
             state += self.length_state_bins**index * state_bin
