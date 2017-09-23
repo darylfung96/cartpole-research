@@ -4,21 +4,24 @@ import numpy as np
 
 from QtableAgent import QtableAgent
 
-BIN_SIZE = 7
+BIN_SIZE = 20
 
 
 env = gym.make('CartPole-v0')
-env.reset()
+state = env.reset()
 
 agent = QtableAgent(env.action_space.n, env, BIN_SIZE, explore_rate=0.5)
 
-
+total_reward = 0
+max_reward = 0
 
 while True:
-    number_action = env.action_space.n
-    action = random.randint(0, number_action-1)
     env.render()
-    state, reward, done, _ = env.step(action)
-
+    state, reward, done = agent.step(state)
+    total_reward += reward
+    if total_reward > max_reward:
+        max_reward = total_reward
+        print(max_reward)
     if done:
         state = env.reset()
+        total_reward = 0
