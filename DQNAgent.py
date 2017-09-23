@@ -3,6 +3,7 @@ import numpy as np
 from Agent import Agent
 
 #TODO: we need to implement experience_replay because agent overestimate q-value
+###
 # experience replay will get a random sample instead of the next state
 
 class DQNAgent(Agent):
