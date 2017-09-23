@@ -2,6 +2,9 @@ import tensorflow as tf
 import numpy as np
 from Agent import Agent
 
+#TODO: we need to implement experience_replay because agent overestimate q-value
+# experience replay will get a random sample instead of the next state
+
 class DQNAgent(Agent):
     def __init__(self, number_actions, env,):
         super(DQNAgent, self).__init__(number_actions, env)
@@ -23,20 +26,43 @@ class DQNAgent(Agent):
         self.sess = tf.Session()
         self.sess.run(tf.global_variables_initializer())
 
+        self.memory = []
+
+
+    """
+    argument: state
+    ------------------
+    state is the current state it is in.
+    we will train the state by getting the next state using env.step
+    
+    We get the target value with the formula:
+    current State q value = reward + discount_rate * next best q value
+    
+    self.train_step will train the optimizer
+    """
     def step(self, state):
         action = self.sess.run(self.output, feed_dict={self.input: state})
+        target = np.zeros_like(action)
         action = np.argmax(action)
 
-        observation, reward, done = self.env(action)
-
-        self.target =
-        self.sess.run(self.train_step)
+        observation, reward, done, _ = self.env.step(action)
 
 
+        observation = observation.reshape(1, -1)
+
+        target = self.sess.run(self.output, feed_dict={self.input: observation})
+        print(target, '1')
+        target[0][action] = reward + 0.9 * np.max(target[0])
+        print(target, '2')
+        self.sess.run(self.train_step, feed_dict={self.target: target, self.input: state})
+
+        return observation, reward, done
 
 
 
-
+    """
+    Declare the variable of weights and biases
+    """
     def _declare_variable(self, shape):
 
         fan_in = shape[0]

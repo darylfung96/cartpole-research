@@ -74,6 +74,7 @@ class QtableAgent(Agent):
 
     def _state_to_bin(self, state):
         state_indexes = []
+        state=state.reshape(-1)
         # for each value in state, put them to the required bin
         for index, value in enumerate(state):
             state_indexes.append(self._put_to_bin(index, value))
