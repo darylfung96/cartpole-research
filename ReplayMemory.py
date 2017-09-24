@@ -5,8 +5,8 @@ class ReplayMemory:
         self.max_size = max_size
         self.memory = []
 
-    def add_memory(self, current_state, reward, action, next_state):
-        self.memory.append([current_state, reward, action, next_state])
+    def add_memory(self, current_state, reward, action, next_state, done):
+        self.memory.append([current_state, reward, action, next_state, done])
 
         # we want to store less than the maximum size, if more than that we remove first one
         if len(self.memory) > self.max_size:
@@ -18,4 +18,5 @@ class ReplayMemory:
     def get_batches(self, batch_size):
         assert batch_size <= len(self.memory)
 
-        return random.sample(self.memory, batch_size)
+        random.shuffle(self.memory)
+        return self.memory[:batch_size]
