@@ -6,13 +6,14 @@ from QtableAgent import QtableAgent
 from DQNAgent import DQNAgent
 
 BIN_SIZE = 8
+BATCH_SIZE = 128
 
 
 env = gym.make('CartPole-v0')
 state = env.reset()
 
 #agent = QtableAgent(env.action_space.n, env, BIN_SIZE, explore_rate=0.5)
-agent = DQNAgent(env.action_space.n, env)
+agent = DQNAgent(env.action_space.n, env, BATCH_SIZE)
 
 total_reward = 0
 max_reward = 0

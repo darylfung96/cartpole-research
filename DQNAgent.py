@@ -1,13 +1,19 @@
 import tensorflow as tf
 import numpy as np
 from Agent import Agent
+from ReplayMemory import ReplayMemory
+import random
 
 #TODO: we need to implement experience_replay because agent overestimate q-value
 # experience replay will get a random sample instead of the next state
 
+
 class DQNAgent(Agent):
-    def __init__(self, number_actions, env,):
+    def __init__(self, number_actions, env, batch_size):
         super(DQNAgent, self).__init__(number_actions, env)
+
+        self.batch_size = batch_size
+        self.explore_rate = 0.8
 
         self.input = tf.placeholder("float", [None, 4])
         self.target = tf.placeholder("float", [None, 2])
@@ -26,8 +32,7 @@ class DQNAgent(Agent):
         self.sess = tf.Session()
         self.sess.run(tf.global_variables_initializer())
 
-        self.memory = []
-
+        self.memory = ReplayMemory(1000) # max memory is 1000
 
     """
     argument: state
@@ -41,22 +46,31 @@ class DQNAgent(Agent):
     self.train_step will train the optimizer
     """
     def step(self, state):
-        action = self.sess.run(self.output, feed_dict={self.input: state})
-        target = np.zeros_like(action)
-        action = np.argmax(action)
+        if random.random() < self.explore_rate:
+            best_action = self.env.action_space.sample()
+            self.explore_rate -= 0.01
+        else:
+            action = self.sess.run(self.output, feed_dict={self.input: state})
+            target = np.zeros_like(action)
+            best_action = np.argmax(action)
 
-        observation, reward, done, _ = self.env.step(action)
+        next_state, reward, done, _ = self.env.step(best_action)
+        next_state = next_state.reshape(1, -1)
 
+        if done:
+            reward = -1.0
 
-        observation = observation.reshape(1, -1)
+        if self.batch_size > self.memory.get_length():
+            self.memory.add_memory(state, reward, best_action, next_state)
+        else:
 
-        target = self.sess.run(self.output, feed_dict={self.input: observation})
-        print(target, '1')
-        target[0][action] = reward + 0.9 * np.max(target[0])
-        print(target, '2')
-        self.sess.run(self.train_step, feed_dict={self.target: target, self.input: state})
+             memories = self.memory.get_batches(self.batch_size)
+            # for memory_state, memory_reward, memory_action, memory_next_state  in memories:
+            #     target = self.sess.run(self.output, feed_dict={self.input: memory_next_state})
+            #     target[0][memory_action] = memory_reward + 0.9 * np.max(target[0])
+            #     self.sess.run(self.train_step, feed_dict={self.target: target, self.input: memory_state})
 
-        return observation, reward, done
+        return next_state, reward, done
 
 
 
