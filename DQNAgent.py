@@ -26,9 +26,9 @@ class DQNAgent(Agent):
         self.layer2 = tf.nn.relu(tf.matmul(self.layer1, self.w_fc2) + self.b2)
 
         self.w_fc3, self.b3 = self._declare_variable([10, number_actions])
-        self.output = tf.nn.relu(tf.matmul(self.layer2, self.w_fc3) + self.b3)
+        self.output = tf.nn.softmax(tf.nn.relu(tf.matmul(self.layer2, self.w_fc3) + self.b3))
 
-        self.train_step = tf.train.AdamOptimizer().minimize(tf.reduce_mean(tf.square(self.target - self.output)))
+        self.train_step = tf.train.AdamOptimizer(learning_rate=0.01).minimize(tf.reduce_mean(tf.square(self.target - self.output)))
 
         self.sess = tf.Session()
         self.sess.run(tf.global_variables_initializer())
@@ -52,24 +52,25 @@ class DQNAgent(Agent):
             self.explore_rate -= 0.01
         else:
             action = self.sess.run(self.output, feed_dict={self.input: state})
+            print(action)
             target = np.zeros_like(action)
-            best_action = np.argmax(action)
+           # best_action = np.argmax(action)
+            best_action = np.random.choice([0, 1], p=action[0])
 
         next_state, reward, done, _ = self.env.step(best_action)
         next_state = next_state.reshape(1, -1)
 
-        if done:
-            reward = -1.0
+
 
         if self.batch_size > self.memory.get_length():
             self.memory.add_memory(state, reward, best_action, next_state)
         else:
 
-             memories = self.memory.get_batches(self.batch_size)
-            # for memory_state, memory_reward, memory_action, memory_next_state  in memories:
-            #     target = self.sess.run(self.output, feed_dict={self.input: memory_next_state})
-            #     target[0][memory_action] = memory_reward + 0.9 * np.max(target[0])
-            #     self.sess.run(self.train_step, feed_dict={self.target: target, self.input: memory_state})
+            memories = self.memory.get_batches(self.batch_size)
+            for memory_state, memory_reward, memory_action, memory_next_state  in memories:
+                target = self.sess.run(self.output, feed_dict={self.input: memory_next_state})
+                target[0][memory_action] = memory_reward + 0.9 * np.max(target[0])
+                self.sess.run(self.train_step, feed_dict={self.target: target, self.input: memory_state})
 
         return next_state, reward, done
 
