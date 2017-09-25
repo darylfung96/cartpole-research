@@ -6,7 +6,7 @@ from QtableAgent import QtableAgent
 from DQNAgent import DQNAgent
 
 BIN_SIZE = 8
-BATCH_SIZE = 128
+BATCH_SIZE = 100
 
 
 env = gym.make('CartPole-v0')
@@ -19,7 +19,6 @@ total_reward = 0
 max_reward = 0
 
 while True:
-    env.render()
     state = state.reshape(1, -1)
     state, reward, done = agent.step(state)
     total_reward += reward
