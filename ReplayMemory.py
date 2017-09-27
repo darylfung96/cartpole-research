@@ -17,6 +17,4 @@ class ReplayMemory:
 
     def get_batches(self, batch_size):
         assert batch_size <= len(self.memory)
-
-        random.shuffle(self.memory)
-        return self.memory[:batch_size]
+        return random.sample(self.memory, batch_size)

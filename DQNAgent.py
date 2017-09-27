@@ -24,15 +24,15 @@ class DQNAgent(Agent):
         self.w_fc2, self.b2 = self._declare_variable([32, 32])
         self.layer2 = tf.nn.relu(tf.matmul(self.layer1, self.w_fc2) + self.b2)
 
-        self.w_fc3, self.b3 = self._declare_variable([32, number_actions])
-        self.output = tf.nn.relu(tf.matmul(self.layer2, self.w_fc3) + self.b3)
+        self.w_fc3, self.b3 = self._declare_variable([32, number_actions]) # actor
+        self.output = tf.matmul(self.layer2, self.w_fc3) + self.b3
 
         self.train_step = tf.train.AdamOptimizer(learning_rate=0.01).minimize(tf.reduce_mean(tf.square(self.target - self.output)))
 
         self.sess = tf.Session()
         self.sess.run(tf.global_variables_initializer())
 
-        self.memory = ReplayMemory(1000) # max memory is 1000
+        self.memory = ReplayMemory(10000) # max memory is 1000
 
     """
     argument: state
@@ -48,11 +48,10 @@ class DQNAgent(Agent):
     def step(self, state):
         if random.random() < self.explore_rate:
             best_action = self.env.action_space.sample()
-            self.explore_rate -= 0.005
+            self.explore_rate -= 0.003
         else:
             action = self.sess.run(self.output, feed_dict={self.input: state})
-            print(action)
-            target = np.zeros_like(action)
+                #print(action)
             best_action = np.argmax(action)
 
         next_state, reward, done, _ = self.env.step(best_action)
@@ -68,7 +67,9 @@ class DQNAgent(Agent):
             memory_inputs = []
             memory_targets = []
 
-            for memory_state, memory_reward, memory_action, memory_next_state, memory_done  in memories:
+            # n-step learning (eligibility trace)
+            for memory_state, memory_reward, memory_action, memory_next_state, memory_done in reversed(memories):
+                # one step learning
                 target = self.sess.run(self.output, feed_dict={self.input: memory_next_state})
                 target[0][memory_action] = memory_reward if memory_done else memory_reward + 0.9 * np.max(target[0])
                 # store values to learn
@@ -78,6 +79,16 @@ class DQNAgent(Agent):
             self.sess.run(self.train_step, feed_dict={self.target: memory_targets, self.input: memory_inputs})
 
         return next_state, reward, done
+
+    def save_model(self):
+        saver = tf.train.Saver()
+        save_path = saver.save(self.sess, './model/model.ckpt')
+        print('Model saved in %s' % save_path)
+
+    def load_model(self):
+        saver = tf.train.Saver()
+        saver.restore(self.sess, './model/model.ckpt')
+        print('Model restored')
 
 
 
