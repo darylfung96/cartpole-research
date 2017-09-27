@@ -1,5 +1,12 @@
 import random
 
+
+"""
+Experience replay is used for DQN for a better
+convergence.
+
+get_batches will return random samples of (state, reward, action, next state, done)
+"""
 class ReplayMemory:
     def __init__(self, max_size):
         self.max_size = max_size
@@ -16,5 +23,4 @@ class ReplayMemory:
         return len(self.memory)
 
     def get_batches(self, batch_size):
-        assert batch_size <= len(self.memory)
-        return random.sample(self.memory, batch_size)
+        return random.sample(self.memory, min(len(self.memory),batch_size))

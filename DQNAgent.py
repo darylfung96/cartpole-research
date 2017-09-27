@@ -7,7 +7,16 @@ import random
 ###
 # experience replay will get a random sample instead of the next state
 
+"""
+A DQNAgent class
 
+DQN: Deep-Q Network
+
+Purpose: Feed input(states) into a neural network and output 
+         appropriate action values.
+         
+training:   Q-state =   reward + GAMMA * max(next Q-state)
+"""
 class DQNAgent(Agent):
     def __init__(self, number_actions, env, batch_size):
         super(DQNAgent, self).__init__(number_actions, env)
@@ -32,7 +41,9 @@ class DQNAgent(Agent):
         self.sess = tf.Session()
         self.sess.run(tf.global_variables_initializer())
 
-        self.memory = ReplayMemory(10000) # max memory is 1000
+        self.memory = ReplayMemory(1024) # max memory
+
+        self.total_reward = 0
 
     """
     argument: state
@@ -57,29 +68,30 @@ class DQNAgent(Agent):
 
         next_state, reward, done, _ = self.env.step(best_action)
         next_state = next_state.reshape(1, -1)
+        self.total_reward += 1
 
         if done:
-            reward = -150
+            if self.total_reward < 199:
+                reward = -150
+            self.total_reward = 0
 
 
 
-        if self.batch_size > self.memory.get_length():
-            self.memory.add_memory(state, reward, best_action, next_state, done)
-        else:
-            # training step
-            memories = self.memory.get_batches(self.batch_size)
-            memory_inputs = []
-            memory_targets = []
+        self.memory.add_memory(state, reward, best_action, next_state, done)
+        # training step
+        memories = self.memory.get_batches(self.batch_size)
+        memory_inputs = []
+        memory_targets = []
 
-            for memory_state, memory_reward, memory_action, memory_next_state, memory_done in memories:
-                target = self.sess.run(self.output, feed_dict={self.input: memory_state})
-                best_next_action = np.max(self.sess.run(self.output, feed_dict={self.input: memory_next_state})[0])
-                target[0][memory_action] = memory_reward if memory_done else memory_reward + 0.90 * best_next_action
-                # store values to learn
-                memory_inputs.append(memory_state[0])
-                memory_targets.append(target[0])
+        for memory_state, memory_reward, memory_action, memory_next_state, memory_done in memories:
+            target = self.sess.run(self.output, feed_dict={self.input: memory_state})
+            best_next_action = np.max(self.sess.run(self.output, feed_dict={self.input: memory_next_state})[0])
+            target[0][memory_action] = memory_reward if memory_done else memory_reward + 0.90 * best_next_action
+            # store values to learn
+            memory_inputs.append(memory_state[0])
+            memory_targets.append(target[0])
 
-            self.sess.run(self.train_step, feed_dict={self.target: memory_targets, self.input: memory_inputs})
+        self.sess.run(self.train_step, feed_dict={self.target: memory_targets, self.input: memory_inputs})
 
         return next_state, reward, done
 
