@@ -6,11 +6,10 @@ from QtableAgent import QtableAgent
 from DQNAgent import DQNAgent
 
 BIN_SIZE = 8
-BATCH_SIZE = 64
 
 MAX_EPISODE = 1000
 MAX_STEP = 200
-
+BATCH_SIZE = 100
 
 env = gym.make('CartPole-v0')
 state = env.reset()

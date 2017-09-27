@@ -11,6 +11,7 @@ from keras.optimizers import Adam
 import time
 
 
+
 class DQNCartPoleSolver():
     def __init__(self, n_episodes=1000, n_win_ticks=195, max_env_steps=None, gamma=1.0, epsilon=1.0, epsilon_min=0.01,
                  epsilon_log_decay=0.995, alpha=0.01, alpha_decay=0.01, batch_size=64, monitor=False, quiet=False):
@@ -72,15 +73,13 @@ class DQNCartPoleSolver():
             i = 0
             while not done:
                 self.env.render()
-                time.sleep(0.016)
                 action = self.choose_action(state, self.get_epsilon(e))
                 next_state, reward, done, _ = self.env.step(action)
                 next_state = self.preprocess_state(next_state)
                 self.remember(state, action, reward, next_state, done)
                 state = next_state
                 i += 1
-
-
+            print(i)
             scores.append(i)
             mean_score = np.mean(scores)
             if mean_score >= self.n_win_ticks and e >= 100:

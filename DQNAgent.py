@@ -18,16 +18,16 @@ class DQNAgent(Agent):
         self.input = tf.placeholder("float", [None, 4])
         self.target = tf.placeholder("float", [None, 2])
 
-        self.w_fc1, self.b1 = self._declare_variable([4, 32])
+        self.w_fc1, self.b1 = self._declare_variable([4, 20])
         self.layer1 = tf.nn.relu(tf.matmul(self.input, self.w_fc1) + self.b1)
 
-        self.w_fc2, self.b2 = self._declare_variable([32, 32])
+        self.w_fc2, self.b2 = self._declare_variable([20, 20])
         self.layer2 = tf.nn.relu(tf.matmul(self.layer1, self.w_fc2) + self.b2)
 
-        self.w_fc3, self.b3 = self._declare_variable([32, number_actions]) # actor
+        self.w_fc3, self.b3 = self._declare_variable([20, number_actions])
         self.output = tf.matmul(self.layer2, self.w_fc3) + self.b3
 
-        self.train_step = tf.train.AdamOptimizer(learning_rate=0.01).minimize(tf.reduce_mean(tf.square(self.target - self.output)))
+        self.train_step = tf.train.AdamOptimizer(learning_rate=0.001).minimize(tf.reduce_mean(tf.square(self.target - self.output)))
 
         self.sess = tf.Session()
         self.sess.run(tf.global_variables_initializer())
@@ -46,16 +46,20 @@ class DQNAgent(Agent):
     self.train_step will train the optimizer
     """
     def step(self, state):
-        if random.random() < self.explore_rate:
+
+        self.env.render()
+        if random.random() <self.explore_rate:
             best_action = self.env.action_space.sample()
-            self.explore_rate -= 0.003
+            self.explore_rate -= 0.01
         else:
             action = self.sess.run(self.output, feed_dict={self.input: state})
-                #print(action)
             best_action = np.argmax(action)
 
         next_state, reward, done, _ = self.env.step(best_action)
         next_state = next_state.reshape(1, -1)
+
+        if done:
+            reward = -150
 
 
 
@@ -67,11 +71,10 @@ class DQNAgent(Agent):
             memory_inputs = []
             memory_targets = []
 
-            # n-step learning (eligibility trace)
-            for memory_state, memory_reward, memory_action, memory_next_state, memory_done in reversed(memories):
-                # one step learning
-                target = self.sess.run(self.output, feed_dict={self.input: memory_next_state})
-                target[0][memory_action] = memory_reward if memory_done else memory_reward + 0.9 * np.max(target[0])
+            for memory_state, memory_reward, memory_action, memory_next_state, memory_done in memories:
+                target = self.sess.run(self.output, feed_dict={self.input: memory_state})
+                best_next_action = np.max(self.sess.run(self.output, feed_dict={self.input: memory_next_state})[0])
+                target[0][memory_action] = memory_reward if memory_done else memory_reward + 0.90 * best_next_action
                 # store values to learn
                 memory_inputs.append(memory_state[0])
                 memory_targets.append(target[0])
