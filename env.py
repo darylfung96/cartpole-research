@@ -4,6 +4,7 @@ import numpy as np
 
 from QtableAgent import QtableAgent
 from DQNAgent import DQNAgent
+from DDQN import DDQNAgent
 
 BIN_SIZE = 8
 
@@ -15,11 +16,11 @@ env = gym.make('CartPole-v0')
 state = env.reset()
 
 #agent = QtableAgent(env.action_space.n, env, BIN_SIZE, explore_rate=0.5)
-agent = DQNAgent(env.action_space.n, env, BATCH_SIZE)
+agent = DDQNAgent(env.action_space.n, env, BATCH_SIZE)
 
 total_reward = 0
 max_reward = 0
-agent.load_model()
+#agent.load_model()
 for current_episode in range(1, MAX_EPISODE):
     for step in range(MAX_STEP):
         env.render()
