@@ -26,3 +26,8 @@ Arguments:
 - type
   - train
   - evaluate
+
+
+To log graph created by TensorBoard (run this in command line inside the parent folder of log_graph):
+
+    tensorboard --logdir './log_graph'
