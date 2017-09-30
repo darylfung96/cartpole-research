@@ -1,11 +1,17 @@
 # cartpole-research
 
 ## Deep Reinforcement Learning
+</br>
+
+## Current available agent
+- DQN
+- DDQN
+
+
 
 Dependencies:
-- TensorFlow
+- [TensorFlow](https://www.tensorflow.org/)
 - Numpy
-- Keras
 
 To run:
     
