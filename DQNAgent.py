@@ -58,7 +58,7 @@ class DQNAgent(Agent):
     """
     def step(self, state):
 
-        self.env.render()
+        #self.env.render()
         if random.random() <self.explore_rate:
             best_action = self.env.action_space.sample()
             self.explore_rate -= 0.01
@@ -71,13 +71,35 @@ class DQNAgent(Agent):
         self.total_reward += 1
 
         if done:
-            if self.total_reward < 199:
+            if self.total_reward < 449:
                 reward = -150
             self.total_reward = 0
 
 
 
         self.memory.add_memory(state, reward, best_action, next_state, done)
+
+        return next_state, reward, done
+
+    def save_model(self):
+        saver = tf.train.Saver()
+        save_path = saver.save(self.sess, './model/model.ckpt')
+        print('Model saved in %s' % save_path)
+
+    def load_model(self):
+        saver = tf.train.Saver()
+        saver.restore(self.sess, './model/model.ckpt')
+        print('Model restored')
+
+
+    """ Empty """
+    def update_target_weights(self):
+        pass
+
+    """
+    Train
+    """
+    def train(self):
         # training step
         memories = self.memory.get_batches(self.batch_size)
         memory_inputs = []
@@ -92,19 +114,6 @@ class DQNAgent(Agent):
             memory_targets.append(target[0])
 
         self.sess.run(self.train_step, feed_dict={self.target: memory_targets, self.input: memory_inputs})
-
-        return next_state, reward, done
-
-    def save_model(self):
-        saver = tf.train.Saver()
-        save_path = saver.save(self.sess, './model/model.ckpt')
-        print('Model saved in %s' % save_path)
-
-    def load_model(self):
-        saver = tf.train.Saver()
-        saver.restore(self.sess, './model/model.ckpt')
-        print('Model restored')
-
 
 
     """

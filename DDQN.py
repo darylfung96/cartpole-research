@@ -33,6 +33,10 @@ class DDQNAgent(Agent):
         self.reward_writer = tf.summary.FileWriter('./log_graph/DDQN', graph=K.get_session().graph)
 
 
+    """
+    Huber loss function
+    sqrt( 1 + error ^2 ) - 1
+    """
     def _loss_function(self, true_value, prediction):
         error = true_value - prediction
         return K.mean(K.sqrt(1 + K.square(error)) - 1, axis=-1)
@@ -109,4 +113,4 @@ class DDQNAgent(Agent):
             target[0][memory_action] = memory_reward if memory_done \
             else memory_reward + 0.90 * target_a[0][np.argmax(a)]
             self.local_network.fit(memory_state, target, verbose=0)
-        pass
+
