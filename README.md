@@ -5,7 +5,12 @@
 
 ## Current available agent
 - DQN
+    - Used greedy algorithm to compute the best action based on the Q value of the next state
+    - Disadvantages are overestimation of the Q value
 - DDQN
+    - Just like DQN, but the difference is that it uses a target network for training
+    - Reduces overestimation of the Q value and improve stability of training
+    - target network is updated after n episodes from the local network
 
 
 
