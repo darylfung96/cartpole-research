@@ -2,9 +2,6 @@ import gym
 import time
 import argparse
 
-from QtableAgent import QtableAgent
-from DQNAgent import DQNAgent
-from DDQN import DDQNAgent
 from ArgParse import parseArgument
 
 BIN_SIZE = 8
@@ -29,7 +26,7 @@ state = env.reset()
 
 total_reward = 0
 max_reward = 0
-agent.load_model()
+#agent.load_model()
 
 
 def evaluate(state):

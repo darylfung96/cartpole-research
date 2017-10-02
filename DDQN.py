@@ -61,7 +61,7 @@ class DDQNAgent(Agent):
         return model
 
     def update_graph(self):
-        summary = K.get_session().run(self.summary_op, feed_dict={ self.score: self.total_reward})
+        summary = K.get_session().run(self.summary_op, feed_dict={self.score: self.total_reward})
         self.reward_writer.add_summary(summary, self.episode_gone)
 
     def step(self, state):
