@@ -63,7 +63,7 @@ def train(state, total_reward, max_reward):
                 print('max_reward: ', max_reward)
                 print()
                 total_reward = 0
-                agent.update_target_weights()
+#                agent.update_target_weights()
                 break
 
         agent.train()
