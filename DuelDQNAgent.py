@@ -29,6 +29,9 @@ class DuelDQNAgent(Agent):
         next_state = next_state.reshape(1, -1)
         variable_next_state = self.preprocess_state(next_state)
 
+        if done:
+            reward = -150
+
         self.memory.add_memory(state, reward, action, variable_next_state, done)
 
         return next_state, reward, done
@@ -40,8 +43,7 @@ class DuelDQNAgent(Agent):
         for memory_state, memory_reward, memory_action, memory_next_state, memory_done in memories:
             memory_action = Variable(torch.LongTensor([[memory_action]]))
             q_value = self.local_network(memory_state).gather(1, memory_action)
-
-            target = self.local_network(memory_next_state).max(1)[0] * 0.90 + memory_reward
+            target = self.local_network(memory_next_state).detach().max(1)[0] * 0.90 + memory_reward
 
             self.optimizer.zero_grad()
             loss = self.loss_function(q_value, target)
