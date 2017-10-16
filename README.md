@@ -13,7 +13,7 @@
     - Reduces overestimation of the Q value and improve stability of training
     - target network is updated after n episodes from the local network
     - [DDQN Research Paper](https://arxiv.org/pdf/1509.06461.pdf)
--DuelDQN
+- DuelDQN
     - Separate action and state 
     - Some states are not important so when we separate them, the agent can determine which states are consider to be important when choosing action and which are not
     - [DuelDQN Research Paper](https://arxiv.org/pdf/1511.06581.pdf)
